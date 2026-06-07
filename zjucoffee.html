@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>浙大咖啡寻味指南 · 找到属于你的空间</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5f0e8;
+    --espresso: #2c1a0e;
+    --latte: #c8a97a;
+    --foam: #ede8de;
+    --steam: #8b6f4e;
+    --matcha: #7a9e7e;
+    --rose: #c97d7d;
+    --sky: #7d9ec9;
+    --amber: #d4943a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--cream);
+    color: var(--espresso);
+    font-family: 'Noto Serif SC', serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== NOISE TEXTURE OVERLAY ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  /* ===== SCREENS ===== */
+  .screen {
+    display: none;
+    min-height: 100vh;
+    animation: fadeIn 0.5s ease;
+  }
+  .screen.active { display: flex; flex-direction: column; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== INTRO SCREEN ===== */
+  #screen-intro {
+    background: var(--espresso);
+    color: var(--cream);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #screen-intro::before {
+    content: '';
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(200,169,122,0.18) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .intro-cup {
+    font-size: 72px;
+    margin-bottom: 20px;
+    display: block;
+    animation: steam 3s ease-in-out infinite;
+  }
+
+  @keyframes steam {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  .intro-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(28px, 6vw, 48px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    color: var(--latte);
+  }
+
+  .intro-subtitle {
+    font-size: 14px;
+    letter-spacing: 0.15em;
+    color: rgba(245,240,232,0.6);
+    margin-bottom: 32px;
+  }
+
+  .intro-desc {
+    max-width: 360px;
+    font-size: 15px;
+    line-height: 1.8;
+    color: rgba(245,240,232,0.85);
+    margin-bottom: 48px;
+  }
+
+  .btn-primary {
+    background: var(--latte);
+    color: var(--espresso);
+    border: none;
+    padding: 16px 48px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.3s;
+    letter-spacing: 0.1em;
+  }
+  .btn-primary:hover {
+    background: var(--cream);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  /* ===== QUESTION SCREENS ===== */
+  .q-screen {
+    background: var(--foam);
+    padding: 0;
+  }
+
+  .q-header {
+    background: var(--espresso);
+    color: var(--cream);
+    padding: 28px 28px 24px;
+    position: relative;
+  }
+
+  .q-progress-bar {
+    height: 3px;
+    background: rgba(245,240,232,0.2);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+
+  .q-progress-fill {
+    height: 100%;
+    background: var(--latte);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .q-step-label {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--latte);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .q-question {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 400;
+    line-height: 1.4;
+  }
+
+  .q-body {
+    padding: 32px 28px;
+    flex: 1;
+  }
+
+  .q-hint {
+    font-size: 13px;
+    color: var(--steam);
+    margin-bottom: 20px;
+    font-style: italic;
+  }
+
+  /* MBTI Grid */
+  .mbti-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .mbti-btn {
+    background: white;
+    border: 2px solid transparent;
+    padding: 14px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 13px;
+    text-align: center;
+    transition: all 0.25s;
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(44,26,14,0.06);
+  }
+
+  .mbti-btn .type-code {
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--latte);
+    margin-bottom: 2px;
+  }
+
+  .mbti-btn .type-name {
+    font-size: 12px;
+    color: var(--steam);
+  }
+
+  .mbti-btn:hover, .mbti-btn.selected {
+    border-color: var(--latte);
+    background: var(--espresso);
+  }
+  .mbti-btn:hover .type-code, .mbti-btn.selected .type-code { color: var(--latte); }
+  .mbti-btn:hover .type-name, .mbti-btn.selected .type-name { color: var(--cream); }
+
+  /* Option Pills */
+  .options-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .option-pill {
+    background: white;
+    border: 2px solid transparent;
+    padding: 12px 20px;
+    border-radius: 99px;
+    cursor: pointer;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    transition: all 0.25s;
+    box-shadow: 0 2px 8px rgba(44,26,14,0.06);
+  }
+
+  .option-pill:hover { border-color: var(--latte); }
+  .option-pill.selected {
+    background: var(--espresso);
+    color: var(--cream);
+    border-color: var(--espresso);
+  }
+
+  /* Slider */
+  .slider-container {
+    margin-bottom: 32px;
+  }
+
+  .slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--steam);
+    margin-bottom: 16px;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    -webkit-appearance: none;
+    height: 6px;
+    background: linear-gradient(to right, var(--espresso) 0%, var(--latte) 50%, #d4c4b0 100%);
+    border-radius: 3px;
+    outline: none;
+    margin-bottom: 8px;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--espresso);
+    border: 3px solid var(--latte);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .slider-value {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--espresso);
+  }
+
+  /* Nav */
+  .q-nav {
+    padding: 0 28px 40px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-next {
+    flex: 1;
+    background: var(--espresso);
+    color: var(--cream);
+    border: none;
+    padding: 16px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    transition: all 0.25s;
+  }
+  .btn-next:hover { background: var(--latte); color: var(--espresso); }
+  .btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-back {
+    background: transparent;
+    border: 2px solid var(--espresso);
+    color: var(--espresso);
+    padding: 16px 20px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.25s;
+  }
+  .btn-back:hover { background: var(--espresso); color: var(--cream); }
+
+  /* ===== LOADING ===== */
+  #screen-loading {
+    background: var(--espresso);
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--cream);
+  }
+
+  .loading-anim {
+    font-size: 60px;
+    margin-bottom: 24px;
+    animation: brew 1.5s ease-in-out infinite;
+  }
+
+  @keyframes brew {
+    0%, 100% { transform: rotate(-5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.1); }
+  }
+
+  .loading-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--latte);
+    margin-bottom: 8px;
+  }
+
+  .loading-sub {
+    font-size: 13px;
+    color: rgba(245,240,232,0.5);
+    letter-spacing: 0.15em;
+  }
+
+  /* ===== RESULT SCREEN ===== */
+  #screen-result {
+    background: var(--cream);
+  }
+
+  .result-header {
+    background: var(--espresso);
+    color: var(--cream);
+    padding: 40px 28px 32px;
+    text-align: center;
+  }
+
+  .result-match-label {
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--latte);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .result-subtitle {
+    font-size: 14px;
+    color: rgba(245,240,232,0.6);
+    line-height: 1.6;
+  }
+
+  .result-cards {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .cafe-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(44,26,14,0.1);
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    border: 1px solid rgba(200,169,122,0.2);
+  }
+
+  .cafe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(44,26,14,0.18);
+  }
+
+  .cafe-card.rank-1 { border-top: 4px solid var(--latte); }
+  .cafe-card.rank-2 { border-top: 4px solid var(--steam); }
+  .cafe-card.rank-3 { border-top: 4px solid #b8b0a4; }
+
+  .cafe-card-emoji {
+    font-size: 48px;
+    background: var(--foam);
+    width: 100%;
+    padding: 24px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .cafe-card-body {
+    padding: 20px;
+  }
+
+  .cafe-rank {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--latte);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .cafe-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    margin-bottom: 8px;
+    color: var(--espresso);
+  }
+
+  .cafe-match-reason {
+    font-size: 13px;
+    color: var(--steam);
+    line-height: 1.7;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .cafe-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .tag {
+    background: var(--foam);
+    color: var(--espresso);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    border: 1px solid rgba(44,26,14,0.1);
+  }
+
+  .cafe-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    font-size: 12px;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--steam);
+  }
+
+  .meta-icon { font-size: 14px; }
+
+  .result-actions {
+    padding: 0 20px 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-restart {
+    background: transparent;
+    border: 2px solid var(--espresso);
+    color: var(--espresso);
+    padding: 14px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 14px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .btn-restart:hover { background: var(--espresso); color: var(--cream); }
+
+  /* ===== DETAIL OVERLAY ===== */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(44,26,14,0.85);
+    z-index: 100;
+    display: none;
+    overflow-y: auto;
+  }
+  .overlay.open { display: block; animation: fadeIn 0.3s ease; }
+
+  .overlay-content {
+    background: var(--cream);
+    margin: 20px auto;
+    max-width: 480px;
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .overlay-emoji {
+    font-size: 80px;
+    background: var(--espresso);
+    text-align: center;
+    padding: 40px 20px;
+    line-height: 1;
+  }
+
+  .overlay-body {
+    padding: 28px;
+  }
+
+  .overlay-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    margin-bottom: 6px;
+  }
+
+  .overlay-tagline {
+    font-size: 14px;
+    color: var(--steam);
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+
+  .detail-section {
+    margin-bottom: 24px;
+  }
+
+  .detail-section h4 {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--latte);
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--foam);
+    padding-bottom: 6px;
+  }
+
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .detail-item {
+    background: var(--foam);
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .detail-label {
+    font-size: 11px;
+    color: var(--steam);
+    margin-bottom: 4px;
+  }
+
+  .detail-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--espresso);
+  }
+
+  .stars {
+    color: var(--latte);
+  }
+
+  .close-overlay {
+    background: var(--espresso);
+    color: var(--cream);
+    border: none;
+    width: 100%;
+    padding: 16px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 15px;
+    cursor: pointer;
+    margin-top: 8px;
+    border-radius: 4px;
+    transition: background 0.25s;
+  }
+  .close-overlay:hover { background: var(--latte); color: var(--espresso); }
+
+  /* scroll hint */
+  .scroll-hint {
+    text-align: center;
+    font-size: 12px;
+    color: rgba(245,240,232,0.4);
+    padding: 12px;
+    letter-spacing: 0.1em;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== INTRO ===== -->
+<div id="screen-intro" class="screen active">
+  <div style="position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;">
+    <span class="intro-cup">☕</span>
+    <div class="intro-title">浙大咖啡<br>寻味指南</div>
+    <div class="intro-subtitle">ZJU COFFEE FINDER · BY MBTI</div>
+    <p class="intro-desc">你今天需要什么样的空间？<br>根据你的 MBTI、情绪与需求，<br>我们为你匹配最合适的校园咖啡角落。</p>
+    <button class="btn-primary" onclick="goTo('screen-q1')">开始寻味 →</button>
+  </div>
+</div>
+
+<!-- ===== Q1: MBTI ===== -->
+<div id="screen-q1" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:14%"></div></div>
+    <div class="q-step-label">Step 1 of 7</div>
+    <div class="q-question">你的 MBTI 类型是？</div>
+  </div>
+  <div class="q-body">
+    <div class="q-hint">不确定？选最接近的就好。</div>
+    <div class="mbti-grid" id="mbti-grid">
+      <!-- generated by JS -->
+    </div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-intro')">←</button>
+    <button class="btn-next" id="btn-q1" disabled onclick="nextQ('screen-q2')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q2: 今天想做什么 ===== -->
+<div id="screen-q2" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:28%"></div></div>
+    <div class="q-step-label">Step 2 of 7</div>
+    <div class="q-question">你今天最想做什么？</div>
+  </div>
+  <div class="q-body">
+    <div class="q-hint">最多选 2 个</div>
+    <div class="options-grid" id="purpose-grid"></div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q1')">←</button>
+    <button class="btn-next" id="btn-q2" disabled onclick="nextQ('screen-q3')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q3: 空间偏好 ===== -->
+<div id="screen-q3" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:42%"></div></div>
+    <div class="q-step-label">Step 3 of 7</div>
+    <div class="q-question">你更喜欢怎样的空间氛围？</div>
+  </div>
+  <div class="q-body">
+    <div class="slider-container">
+      <div class="slider-labels">
+        <span>🤫 极度安静</span>
+        <span>🎉 热闹喧嚣</span>
+      </div>
+      <input type="range" min="1" max="5" value="3" id="noise-slider"
+        oninput="answers.noise=this.value; document.getElementById('noise-val').textContent=['','安静','偏安静','适中','偏热闹','热闹'][this.value]; document.getElementById('btn-q3').disabled=false;">
+      <div class="slider-value" id="noise-val">适中</div>
+    </div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q2')">←</button>
+    <button class="btn-next" id="btn-q3" onclick="answers.noise=document.getElementById('noise-slider').value; nextQ('screen-q4')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q4: 情绪状态 ===== -->
+<div id="screen-q4" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:56%"></div></div>
+    <div class="q-step-label">Step 4 of 7</div>
+    <div class="q-question">你现在的状态更接近？</div>
+  </div>
+  <div class="q-body">
+    <div class="options-grid" id="mood-grid"></div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q3')">←</button>
+    <button class="btn-next" id="btn-q4" disabled onclick="nextQ('screen-q5')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q5: 简餐需求 ===== -->
+<div id="screen-q5" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:70%"></div></div>
+    <div class="q-step-label">Step 5 of 7</div>
+    <div class="q-question">需要简餐吗？</div>
+  </div>
+  <div class="q-body">
+    <div class="options-grid" id="food-grid"></div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q4')">←</button>
+    <button class="btn-next" id="btn-q5" disabled onclick="nextQ('screen-q6')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q6: 插座 ===== -->
+<div id="screen-q6" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:84%"></div></div>
+    <div class="q-step-label">Step 6 of 7</div>
+    <div class="q-question">插座需求？</div>
+  </div>
+  <div class="q-body">
+    <div class="options-grid" id="socket-grid"></div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q5')">←</button>
+    <button class="btn-next" id="btn-q6" disabled onclick="nextQ('screen-q7')">继续 →</button>
+  </div>
+</div>
+
+<!-- ===== Q7: 预算 ===== -->
+<div id="screen-q7" class="screen q-screen">
+  <div class="q-header">
+    <div class="q-progress-bar"><div class="q-progress-fill" style="width:100%"></div></div>
+    <div class="q-step-label">Step 7 of 7</div>
+    <div class="q-question">你的预算范围？</div>
+  </div>
+  <div class="q-body">
+    <div class="options-grid" id="budget-grid"></div>
+  </div>
+  <div class="q-nav">
+    <button class="btn-back" onclick="goTo('screen-q6')">←</button>
+    <button class="btn-next" id="btn-q7" disabled onclick="calcResult()">查看推荐 ☕</button>
+  </div>
+</div>
+
+<!-- ===== LOADING ===== -->
+<div id="screen-loading" class="screen">
+  <div class="loading-anim">☕</div>
+  <div class="loading-text">正在为你研磨推荐……</div>
+  <div class="loading-sub">BREWING YOUR PERFECT MATCH</div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="screen-result" class="screen">
+  <div class="result-header">
+    <div class="result-match-label">Your Coffee Match</div>
+    <div class="result-title" id="result-headline">☕ 你的专属咖啡空间</div>
+    <div class="result-subtitle" id="result-subtext">基于你的 MBTI 与当前状态匹配</div>
+  </div>
+  <div class="result-cards" id="result-cards"></div>
+  <div class="result-actions">
+    <button class="btn-restart" onclick="restart()">↩ 重新寻味</button>
+  </div>
+</div>
+
+<!-- ===== DETAIL OVERLAY ===== -->
+<div class="overlay" id="overlay" onclick="closeOverlay(event)">
+  <div class="overlay-content" id="overlay-content">
+    <!-- filled by JS -->
+  </div>
+  <div class="scroll-hint">↑ 点击空白处关闭</div>
+</div>
+
+<script>
+// ===== DATA =====
+const MBTI_TYPES = [
+  {code:'INTJ',name:'建筑师',tags:['I','N','T','J']},
+  {code:'INTP',name:'逻辑学家',tags:['I','N','T','P']},
+  {code:'ENTJ',name:'指挥官',tags:['E','N','T','J']},
+  {code:'ENTP',name:'辩论家',tags:['E','N','T','P']},
+  {code:'INFJ',name:'提倡者',tags:['I','N','F','J']},
+  {code:'INFP',name:'调停者',tags:['I','N','F','P']},
+  {code:'ENFJ',name:'主人公',tags:['E','N','F','J']},
+  {code:'ENFP',name:'竞选者',tags:['E','N','F','P']},
+  {code:'ISTJ',name:'物流师',tags:['I','S','T','J']},
+  {code:'ISFJ',name:'守卫者',tags:['I','S','F','J']},
+  {code:'ESTJ',name:'总经理',tags:['E','S','T','J']},
+  {code:'ESFJ',name:'执政官',tags:['E','S','F','J']},
+  {code:'ISTP',name:'鉴赏家',tags:['I','S','T','P']},
+  {code:'ISFP',name:'探险家',tags:['I','S','F','P']},
+  {code:'ESTP',name:'企业家',tags:['E','S','T','P']},
+  {code:'ESFP',name:'表演者',tags:['E','S','F','P']},
+];
+
+const PURPOSES = ['赶 ddl','想独处','小组讨论','适合约会','拍照打卡','熬夜学习'];
+const MOODS = ['😰 焦虑','😴 疲惫','😌 平静','🥳 社交欲强','🌫️ 想放空','😔 情绪低落'];
+const FOOD_OPT = ['需要简餐','只要咖啡','随缘'];
+const SOCKET_OPT = ['非常需要 🔋','一般般','不需要'];
+const BUDGET_OPT = ['20元以下','20–40元','40元以上'];
+
+// ===== COFFEE SHOPS DATA =====
+// 替换为真实浙大周边咖啡店数据
+const CAFES = [
+  {
+    id: 1,
+    emoji: '📚',
+    name: '文一西路自习室咖啡',
+    tagline: '插座遍地·写论文必去',
+    noise: 1, // 1=安静 5=热闹
+    socket: 3, // 1=少 3=多
+    photo_ok: false,
+    study_ok: true,
+    social_ok: false,
+    food: true,
+    budget: 2, // 1=低 3=高
+    mbti_fit: ['I','S','T','J'],
+    mood_fit: ['焦虑','平静'],
+    purpose_fit: ['赶 ddl','熬夜学习','想独处'],
+    address: '文一西路XX号（示例地址）',
+    hours: '8:00–22:00',
+    price_avg: '25–35元',
+    tags: ['插座多','自习友好','安静','长时停留'],
+    details: {
+      seat_count: '约40座',
+      wifi: '有，稳定',
+      power: '每桌插座',
+      noise_desc: '极安静，禁止通话',
+    }
+  },
+  {
+    id: 2,
+    emoji: '🌸',
+    name: '玉泉花园咖啡小馆',
+    tagline: '氛围绝了·拍照必选',
+    noise: 2,
+    socket: 1,
+    photo_ok: true,
+    study_ok: false,
+    social_ok: true,
+    food: true,
+    budget: 3,
+    mbti_fit: ['N','F','P','E'],
+    mood_fit: ['平静','想放空','情绪低落'],
+    purpose_fit: ['拍照打卡','适合约会','想独处'],
+    address: '玉泉校区附近（示例地址）',
+    hours: '10:00–21:00',
+    price_avg: '40–55元',
+    tags: ['出片率高','治愈系','氛围感','甜品'],
+    details: {
+      seat_count: '约20座',
+      wifi: '有',
+      power: '少量插座',
+      noise_desc: '轻音乐背景，偶有交谈声',
+    }
+  },
+  {
+    id: 3,
+    emoji: '🗣️',
+    name: '紫金港社交咖啡站',
+    tagline: '讨论组讨论最爱的地儿',
+    noise: 4,
+    socket: 2,
+    photo_ok: false,
+    study_ok: false,
+    social_ok: true,
+    food: true,
+    budget: 2,
+    mbti_fit: ['E','F','P'],
+    mood_fit: ['社交欲强','平静'],
+    purpose_fit: ['小组讨论','适合约会'],
+    address: '紫金港校区旁（示例地址）',
+    hours: '9:00–22:30',
+    price_avg: '30–45元',
+    tags: ['开放座位','小组友好','社交氛围','桌游'],
+    details: {
+      seat_count: '约60座',
+      wifi: '有',
+      power: '部分桌有插座',
+      noise_desc: '热闹，适合讨论',
+    }
+  },
+  {
+    id: 4,
+    emoji: '🌙',
+    name: '西溪夜猫子咖啡',
+    tagline: '深夜熬夜党的救赎',
+    noise: 2,
+    socket: 3,
+    photo_ok: false,
+    study_ok: true,
+    social_ok: false,
+    food: true,
+    budget: 2,
+    mbti_fit: ['I','T','J'],
+    mood_fit: ['焦虑','疲惫'],
+    purpose_fit: ['熬夜学习','赶 ddl'],
+    address: '西溪校区附近（示例地址）',
+    hours: '12:00–次日2:00',
+    price_avg: '25–38元',
+    tags: ['营业到凌晨','插座充足','安静','简餐'],
+    details: {
+      seat_count: '约30座',
+      wifi: '有，夜间稳定',
+      power: '每桌双插座',
+      noise_desc: '深夜安静，偶有键盘声',
+    }
+  },
+  {
+    id: 5,
+    emoji: '🌿',
+    name: '华家池森林系咖啡',
+    tagline: '放空发呆的绿意角落',
+    noise: 2,
+    socket: 1,
+    photo_ok: true,
+    study_ok: false,
+    social_ok: false,
+    food: false,
+    budget: 1,
+    mbti_fit: ['I','N','F'],
+    mood_fit: ['想放空','情绪低落','平静'],
+    purpose_fit: ['想独处','拍照打卡'],
+    address: '华家池校区（示例地址）',
+    hours: '10:00–18:00',
+    price_avg: '18–28元',
+    tags: ['亲近自然','独处友好','平价','轻音乐'],
+    details: {
+      seat_count: '约15座',
+      wifi: '有',
+      power: '插座较少',
+      noise_desc: '鸟鸣+轻音乐，极度治愈',
+    }
+  },
+];
+
+// ===== STATE =====
+let answers = {
+  mbti: null,
+  purpose: [],
+  noise: 3,
+  mood: null,
+  food: null,
+  socket: null,
+  budget: null,
+};
+
+// ===== INIT GRIDS =====
+function initGrids() {
+  // MBTI
+  const mg = document.getElementById('mbti-grid');
+  MBTI_TYPES.forEach(t => {
+    const btn = document.createElement('button');
+    btn.className = 'mbti-btn';
+    btn.innerHTML = `<span class="type-code">${t.code}</span><span class="type-name">${t.name}</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.mbti-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers.mbti = t;
+      document.getElementById('btn-q1').disabled = false;
+    };
+    mg.appendChild(btn);
+  });
+
+  // Purpose
+  buildPills('purpose-grid', PURPOSES, 'purpose', 2, 'btn-q2');
+  // Mood
+  buildSingle('mood-grid', MOODS, 'mood', 'btn-q4');
+  // Food
+  buildSingle('food-grid', FOOD_OPT, 'food', 'btn-q5');
+  // Socket
+  buildSingle('socket-grid', SOCKET_OPT, 'socket', 'btn-q6');
+  // Budget
+  buildSingle('budget-grid', BUDGET_OPT, 'budget', 'btn-q7');
+}
+
+function buildPills(gridId, options, key, maxSelect, btnId) {
+  const grid = document.getElementById(gridId);
+  options.forEach(opt => {
+    const pill = document.createElement('button');
+    pill.className = 'option-pill';
+    pill.textContent = opt;
+    pill.onclick = () => {
+      if (pill.classList.contains('selected')) {
+        pill.classList.remove('selected');
+        answers[key] = answers[key].filter(v => v !== opt);
+      } else {
+        const sel = grid.querySelectorAll('.selected');
+        if (sel.length >= maxSelect) sel[0].classList.remove('selected'), answers[key].shift();
+        pill.classList.add('selected');
+        answers[key].push(opt);
+      }
+      document.getElementById(btnId).disabled = answers[key].length === 0;
+    };
+    grid.appendChild(pill);
+  });
+}
+
+function buildSingle(gridId, options, key, btnId) {
+  const grid = document.getElementById(gridId);
+  options.forEach((opt, i) => {
+    const pill = document.createElement('button');
+    pill.className = 'option-pill';
+    pill.textContent = opt;
+    pill.onclick = () => {
+      grid.querySelectorAll('.option-pill').forEach(b=>b.classList.remove('selected'));
+      pill.classList.add('selected');
+      answers[key] = i + 1; // 1-indexed
+      document.getElementById(btnId).disabled = false;
+    };
+    grid.appendChild(pill);
+  });
+}
+
+// ===== NAVIGATION =====
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function nextQ(id) { goTo(id); }
+
+function restart() {
+  answers = { mbti: null, purpose: [], noise: 3, mood: null, food: null, socket: null, budget: null };
+  document.querySelectorAll('.mbti-btn,.option-pill').forEach(b => b.classList.remove('selected'));
+  document.getElementById('noise-slider').value = 3;
+  document.getElementById('noise-val').textContent = '适中';
+  ['btn-q1','btn-q2','btn-q4','btn-q5','btn-q6','btn-q7'].forEach(id => {
+    document.getElementById(id).disabled = true;
+  });
+  goTo('screen-intro');
+}
+
+// ===== SCORING =====
+function calcResult() {
+  goTo('screen-loading');
+  setTimeout(() => {
+    const ranked = scoreCafes();
+    renderResult(ranked);
+    goTo('screen-result');
+  }, 1800);
+}
+
+function scoreCafes() {
+  return CAFES.map(cafe => {
+    let score = 0;
+
+    // MBTI match
+    if (answers.mbti) {
+      const tags = answers.mbti.tags;
+      tags.forEach(t => { if (cafe.mbti_fit.includes(t)) score += 3; });
+    }
+
+    // Purpose match
+    answers.purpose.forEach(p => {
+      const raw = p.replace(/^\S+\s/, '');
+      if (cafe.purpose_fit.some(pf => pf.includes(raw) || raw.includes(pf))) score += 4;
+    });
+
+    // Noise match
+    const noiseDiff = Math.abs(cafe.noise - parseInt(answers.noise));
+    score += (5 - noiseDiff) * 2;
+
+    // Mood match
+    const moodRaw = MOODS[answers.mood - 1]?.replace(/^\S+\s/, '') || '';
+    if (cafe.mood_fit.some(m => m.includes(moodRaw) || moodRaw.includes(m))) score += 4;
+
+    // Socket
+    if (answers.socket === 1 && cafe.socket === 3) score += 5;
+    else if (answers.socket === 3) score += 2;
+    else score += (4 - Math.abs(cafe.socket - answers.socket));
+
+    // Food
+    if (answers.food === 1 && cafe.food) score += 3;
+
+    // Budget (1=low,2=mid,3=high)
+    if (cafe.budget === answers.budget) score += 3;
+    else score += Math.max(0, 2 - Math.abs(cafe.budget - answers.budget));
+
+    return { ...cafe, score };
+  }).sort((a, b) => b.score - a.score);
+}
+
+function renderResult(ranked) {
+  const top = ranked[0];
+  document.getElementById('result-headline').textContent =
+    `${top.emoji} ${top.name}`;
+  document.getElementById('result-subtext').textContent =
+    `为你推荐 ${ranked.length} 家咖啡空间，点击查看详情`;
+
+  const container = document.getElementById('result-cards');
+  container.innerHTML = '';
+
+  ranked.slice(0, 3).forEach((cafe, i) => {
+    const card = document.createElement('div');
+    card.className = `cafe-card rank-${i+1}`;
+    card.onclick = () => openDetail(cafe);
+    card.innerHTML = `
+      <div class="cafe-card-emoji">${cafe.emoji}</div>
+      <div class="cafe-card-body">
+        <div class="cafe-rank">${['✦ 最佳匹配','✦ 次佳推荐','✦ 备选推荐'][i]}</div>
+        <div class="cafe-name">${cafe.name}</div>
+        <div class="cafe-match-reason">${cafe.tagline}</div>
+        <div class="cafe-tags">
+          ${cafe.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+        <div class="cafe-meta">
+          <div class="meta-item"><span class="meta-icon">📍</span>${cafe.address.substring(0,10)}...</div>
+          <div class="meta-item"><span class="meta-icon">🕐</span>${cafe.hours}</div>
+          <div class="meta-item"><span class="meta-icon">💰</span>${cafe.price_avg}</div>
+          <div class="meta-item"><span class="meta-icon">🔌</span>${['','插座少','适量','插座多'][cafe.socket]}</div>
+        </div>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+// ===== DETAIL OVERLAY =====
+function openDetail(cafe) {
+  const oc = document.getElementById('overlay-content');
+  oc.innerHTML = `
+    <div class="overlay-emoji">${cafe.emoji}</div>
+    <div class="overlay-body">
+      <div class="overlay-name">${cafe.name}</div>
+      <div class="overlay-tagline">${cafe.tagline}</div>
+
+      <div class="detail-section">
+        <h4>基础信息</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">地址</div>
+            <div class="detail-value" style="font-size:13px">${cafe.address}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">营业时间</div>
+            <div class="detail-value" style="font-size:13px">${cafe.hours}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">人均价格</div>
+            <div class="detail-value">${cafe.price_avg}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">座位数</div>
+            <div class="detail-value">${cafe.details.seat_count}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>空间属性</h4>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <div class="detail-label">WiFi</div>
+            <div class="detail-value">${cafe.details.wifi}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">插座</div>
+            <div class="detail-value">${cafe.details.power}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">适合学习</div>
+            <div class="detail-value">${cafe.study_ok ? '✅ 是' : '❌ 否'}</div>
+          </div>
+          <div class="detail-item">
+            <div class="detail-label">适合拍照</div>
+            <div class="detail-value">${cafe.photo_ok ? '✅ 是' : '❌ 否'}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>氛围描述</h4>
+        <div style="background:var(--foam);padding:14px;border-radius:8px;font-size:14px;line-height:1.7;color:var(--steam);font-style:italic;">
+          "${cafe.details.noise_desc}"
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>标签</h4>
+        <div class="cafe-tags">
+          ${cafe.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+      </div>
+
+      <button class="close-overlay" onclick="closeOverlayBtn()">关闭 ↓</button>
+    </div>`;
+  document.getElementById('overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeOverlay(e) {
+  if (e.target.id === 'overlay') closeOverlayBtn();
+}
+function closeOverlayBtn() {
+  document.getElementById('overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ===== BOOT =====
+initGrids();
+</script>
+</body>
+</html>
